@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>TheMedia</h1>
+    </header>
+
+    <p><a href="/logout">Logout</a></p>
+
+    <div class="container">
+        <h2>Recent Posts</h2>
+    </div>
+
+</body>
+<script>
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } else { 
+      alert("Geolocation is not supported by this browser.");
+    }
+
+    function showPosition(position) {
+
+      var latitude = position.coords.latitude;
+      var Longitude = position.coords.longitude;
+      alert("latitude " + latitude + " and longitude " + Longitude)
+
+      fetch('/location', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+      },
+          body: JSON.stringify({latitude: latitude, longitude: longitude})
+})
+
+      
+    }
+  </script>
+</html>
