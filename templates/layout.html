@@ -1,21 +1,58 @@
-<!DOCTYPE html>
 
-<html lang="en">
+<!DOCTYPE HTML>
+<html>
+  <head>
+      <title>NearSnap Login</title>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <head>
+      <link rel="icon" type="image/png" href="static/images/nearsnap-icon.png"/>
 
-        <meta charset="utf-8">
-        <meta name="viewport" content="initial-scale=1, width=device-width">
+      <link rel="stylesheet" type="text/css" href="static/vendor/bootstrap/css/bootstrap.min.css">
+  
+      <link rel="stylesheet" type="text/css" href="static/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
 
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-        <link href="/static/styles.css" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href="static/vendor/animate/animate.css">
 
-        <title>DeMap</title>
+      <link rel="stylesheet" type="text/css" href="static/vendor/css-hamburgers/hamburgers.min.css">
+
+      <link rel="stylesheet" type="text/css" href="static/vendor/select2/select2.min.css">
+
+      <link rel="stylesheet" type="text/css" href="static/css/util.css">
+      <link rel="stylesheet" type="text/css" href="static/css/main.css">      
 
     </head>
-
     <body>
-        {% block body %}{% endblock %}
+
+        <div class="limiter">
+          <div class="container-login100">
+            <div class="wrap-login100">
+              <div class="login100-pic js-tilt" data-tilt>
+                <img src="static/images/nearsnap-logo.png" alt="IMG">
+              </div>
+              {% block form %}{% endblock %}
+            </div>
+          </div>
+        </div>
+        
+        <script src="static/vendor/jquery/jquery-3.2.1.min.js"></script>
+
+        <script src="static/vendor/bootstrap/js/popper.js"></script>
+        <script src="static/vendor/bootstrap/js/bootstrap.min.js"></script>
+
+        <script src="static/vendor/select2/select2.min.js"></script>
+
+        <script src="static/vendor/tilt/tilt.jquery.min.js"></script>
+
+        <script >
+          $('.js-tilt').tilt({
+            scale: 1.1
+          })
+        </script>
+
+        <script src="static/js/main.js"></script>
     </body>
+
+
 
 </html>

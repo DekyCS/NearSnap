@@ -115,6 +115,8 @@ def location():
 
 @app.route("/loading")
 def loading():
+
+    
     return render_template("loading.html")
 
 
