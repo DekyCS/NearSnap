@@ -3,7 +3,7 @@ from cs50 import SQL
 from flask import redirect, render_template , request, session
 from flask_session import Session
 from flask_sockets import Sockets
-from geopy.distance import distance
+
 
 # from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -100,7 +100,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/location")
+@app.route("/location", methods=["POST"])
 def location():
 
     latitude = request.json['latitude']

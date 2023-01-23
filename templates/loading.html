@@ -1,25 +1,24 @@
+
+
+
 <script>
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else { 
+    alert("Geolocation is not supported by this browser.");
+  }
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    } else { 
-      alert("Geolocation is not supported by this browser.");
-    }
+  function showPosition(position) {
+    var latitude = position.coords.latitude;
+    var longitude = position.coords.longitude;
+    alert("latitude " + latitude + " and longitude " + longitude)
 
-    function showPosition(position) {
-
-      var latitude = position.coords.latitude;
-      var Longitude = position.coords.longitude;
-      alert("latitude " + latitude + " and longitude " + Longitude)
-
-      fetch('/location', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json'
+    fetch('/location', {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json'
       },
-          body: JSON.stringify({latitude: latitude, longitude: longitude})
-})
-
-      
-    }
-  </script>
+      body: JSON.stringify({latitude: latitude, longitude: longitude})
+    })
+  }
+</script>
