@@ -31,12 +31,14 @@ def index():
     
     elif session.get("location") is None:
         return redirect("/loading")
-     
+
     else:
+        
 
-
-        #db.execute("SELECT * FROM posts WHERE  ")
-        return render_template("index.html")
+        latitude = session["latitude"]
+        longitude = session["longitude"]
+        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
+        return render_template("index.html", posts)
         
 
 @app.route("/login", methods=["GET", "POST"])
