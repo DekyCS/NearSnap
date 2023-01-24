@@ -1,24 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading</title>
+</head>
+<body>
 
+        <h1>Loading</h1>
 
+</body>
 
 <script>
-  if (navigator.geolocation) {
+
+    if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition);
-  } else { 
+  } 
+    else { 
     alert("Geolocation is not supported by this browser.");
   }
 
-  function showPosition(position) {
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
-    alert("latitude " + latitude + " and longitude " + longitude)
+    function showPosition(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        //alert("latitude " + latitude + " and longitude " + longitude)
+    
 
-    fetch('/location', {
-      method: 'POST',
-      headers: {
-      'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({latitude: latitude, longitude: longitude})
-    })
-  }
+        var entry = {
+            longitude: longitude,
+            latitude: latitude
+        }
+
+        console.log(entry);
+
+        fetch(`${window.origin}/loading/create-entry`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(entry),
+            cache: "no-cache",
+            headers: new Headers({
+                "content-type": "application/json"
+            })
+        })
+        .then(function (response){
+
+            if (response.status == 200) {
+                console.log("good status");
+                window.location.href = `${window.origin}/`;
+                return ;
+
+            }
+        })
+
+    }
+
 </script>
+
+
+</html>
