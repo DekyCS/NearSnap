@@ -36,6 +36,8 @@ def index():
         
         app.config["session_location"] = 0
 
+        print(location)
+
         #posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
         return render_template("index.html")
         
