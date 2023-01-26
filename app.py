@@ -1,11 +1,11 @@
-from flask import Flask, url_for
+from flask import Flask
+import os
 from cs50 import SQL
 from flask import redirect, render_template , request, session, jsonify, make_response
 from flask_session import Session
 from flask_sockets import Sockets
-
-
-# from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -18,8 +18,11 @@ app.secret_key = "uytgfviygf9876gyfv786gyf876t7678ft"
 
 db = SQL("sqlite:///media.db")
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 location = []
 app.config["session_location"] = 0
+app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -40,6 +43,34 @@ def index():
 
         #posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
         return render_template("index.html")
+
+def allowed_file(filename):
+    return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/posting", methods=["GET", "POST"])
+def posting():
+
+    if request.method == "GET":
+        return render_template("posting.html")
+
+    else:
+
+        if 'file' not in request.files:
+            return redirect("/posting")
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return redirect('/posting')
+
+        if allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'], filename))
+        
+        else:
+            return redirect('/posting')
+
+        return redirect("/")
         
 
 @app.route("/login", methods=["GET", "POST"])
@@ -54,8 +85,7 @@ def login():
         session.clear()
 
         username = request.form.get("username")
-        password = request.form.get("password")
-
+        password = check_password_hash(request.form.get("password"))
 
         userid = db.execute("SELECT id FROM users WHERE username = ? AND password = ? ", username, password)
 
@@ -85,7 +115,7 @@ def register():
             if password != password_confirm:
                 return redirect("/register")
             else:
-                db.execute("INSERT INTO users (username, password) VALUES(?, ?)", username, password)
+                db.execute("INSERT INTO users (username, password) VALUES(?, ?)", username, generate_password_hash(password))
                 return redirect("/")
 
 @app.route("/logout", methods=["GET", "POST"])

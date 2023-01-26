@@ -10,30 +10,11 @@
 
     <p><a href="/logout">Logout</a></p>
 
+    <p><a href="/posting">Post</a></p>
+
     <div class="container">
         <h2>Recent Posts</h2>
     </div>
-
-    <form action="/" method="post" enctype=multipart/form-data>
-        <div>
-            <input type="file" id="picture" name="picture" accept="image/jpeg, image/png">
-            <label class="label" for="picture">
-                <i class="material-icons">add_photo_alternate</i> &nbsp;
-                Choose a Photo
-                </label>
-        <input type="submit" class="index">
-        </div>
-
-        <select name="filters">
-            <option disable selected>Choose a Filter</option>
-            {% for row in filters%}
-
-            <option>{{ row }}</option>
-
-            {% endfor %}
-
-        </select>
-    </form>
 
 </body>
 
