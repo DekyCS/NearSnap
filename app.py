@@ -26,6 +26,7 @@ location = []
 app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 
@@ -45,8 +46,8 @@ def index():
         latitude = location[1]
         longitude = location[0]
 
-        #posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
-        return render_template("index.html")
+        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
+        return render_template("index.html", posts = posts)
 
 def allowed_file(filename):
     return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -75,17 +76,17 @@ def posting():
             file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'], filename))
             # file.save('/folder')
 
-            time_created = datetime.datetime.now(pytz.timezone('US/Eastern'))
+            
             if not location:
                 return redirect("/login")
             else:
                 latitude = location[1]
                 longitude = location[0]
                 caption = request.form.get("caption")
-
+                time_created= datetime.datetime.now(pytz.timezone('US/Eastern'))
                 db.execute("INSERT INTO posts (user_id, created_at, content, likes, caption, latitude, longitude) VALUES(?, ?, ?, ?, ?, ?, ?)", session["userid"], time_created, filename, 0 , caption , latitude, longitude)
 
-        
+
         else:
                 return redirect('/posting')
 
@@ -139,7 +140,8 @@ def register():
             if password != password_confirm:
                 return redirect("/register")
             else:
-                db.execute("INSERT INTO users (username, password) VALUES(?, ?)", username, generate_password_hash(password))
+                time_created= datetime.datetime.now(pytz.timezone('US/Eastern'))
+                db.execute("INSERT INTO users (username, password, time_created) VALUES(?, ?, ?)", username, generate_password_hash(password), time_created)
                 return redirect("/")
 
 @app.route("/logout", methods=["GET", "POST"])
@@ -165,5 +167,9 @@ def create_entry():
 
     return "doesn't matter"
 
-            
+@app.route("/home")
+def home():
+    return render_template("home.html")
 
+
+            
