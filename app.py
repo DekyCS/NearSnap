@@ -5,6 +5,7 @@ from flask import redirect, render_template , request, session, jsonify, make_re
 from flask_session import Session
 from flask_sockets import Sockets
 from werkzeug.utils import secure_filename
+import datetime, pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ db = SQL("sqlite:///media.db")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 location = []
+
 app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
@@ -40,6 +42,8 @@ def index():
         app.config["session_location"] = 0
 
         print(location)
+        latitude = location[1]
+        longitude = location[0]
 
         #posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
         return render_template("index.html")
@@ -55,6 +59,9 @@ def posting():
 
     else:
 
+        if not location:
+            return redirect('/loading')
+
         if 'file' not in request.files:
             return redirect("/posting")
 
@@ -66,12 +73,19 @@ def posting():
         if allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'], filename))
+            # file.save('/folder')
+
+            time_created = datetime.datetime.now(pytz.timezone('US/Eastern'))
+            latitude = location[1]
+            longitude = location[0]
+
+            db.execute("INSERT INTO posts (user_id, created_at, content ,latitude, longitude ) VALUES(?, ?, ?, ?, ?)", session["userid"], time_created , time_created ,latitude, longitude)
+
         
         else:
-            return redirect('/posting')
+                return redirect('/posting')
 
         return redirect("/")
-        
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -85,11 +99,12 @@ def login():
         session.clear()
 
         username = request.form.get("username")
-        password = check_password_hash(request.form.get("password"))
 
-        userid = db.execute("SELECT id FROM users WHERE username = ? AND password = ? ", username, password)
+        userid = db.execute("SELECT id FROM users WHERE username = ?", username)
 
-        if not userid:
+        hash = db.execute("SELECT password FROM users where id = ?", userid[0]["id"])
+
+        if not userid or not check_password_hash(hash[0]["password"], request.form.get("password")):
             return render_template("login.html")
          
         session["userid"] = userid[0]["id"]
@@ -110,6 +125,8 @@ def register():
         password_confirm = request.form.get("password2")
 
         exist = db.execute("SELECT * FROM users WHERE username = ?", username)
+
+        print(generate_password_hash(password))
 
         if not exist:
             if password != password_confirm:
