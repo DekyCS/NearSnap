@@ -79,7 +79,7 @@ def posting():
             latitude = location[1]
             longitude = location[0]
 
-            db.execute("INSERT INTO posts (user_id, created_at, content ,latitude, longitude ) VALUES(?, ?, ?, ?, ?)", session["userid"], time_created , time_created ,latitude, longitude)
+            db.execute("INSERT INTO posts (user_id, created_at, content ,latitude, longitude ) VALUES(?, ?, ?, ?, ?)", session["userid"], time_created, filename, latitude, longitude)
 
         
         else:
