@@ -76,10 +76,14 @@ def posting():
             # file.save('/folder')
 
             time_created = datetime.datetime.now(pytz.timezone('US/Eastern'))
-            latitude = location[1]
-            longitude = location[0]
+            if not location:
+                return redirect("/login")
+            else:
+                latitude = location[1]
+                longitude = location[0]
+                caption = request.form.get("caption")
 
-            db.execute("INSERT INTO posts (user_id, created_at, content ,latitude, longitude ) VALUES(?, ?, ?, ?, ?)", session["userid"], time_created, filename, latitude, longitude)
+                db.execute("INSERT INTO posts (user_id, created_at, content, likes, caption, latitude, longitude) VALUES(?, ?, ?, ?, ?, ?, ?)", session["userid"], time_created, filename, 0 , caption , latitude, longitude)
 
         
         else:
