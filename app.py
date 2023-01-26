@@ -102,9 +102,11 @@ def login():
 
         userid = db.execute("SELECT id FROM users WHERE username = ?", username)
 
-        hash = db.execute("SELECT password FROM users where id = ?", userid[0]["id"])
+        if not userid:    
+            hash = db.execute("SELECT password FROM users where id = ?", userid[0]["id"])
+            return render_template("login.html")
 
-        if not userid or not check_password_hash(hash[0]["password"], request.form.get("password")):
+        if not check_password_hash(hash[0]["password"], request.form.get("password")):
             return render_template("login.html")
          
         session["userid"] = userid[0]["id"]
