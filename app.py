@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, send_file
 import os
 from cs50 import SQL
-from flask import redirect, render_template , request, session, jsonify, make_response
+from flask import redirect, render_template , request, session, jsonify, make_response, flash
 from flask_session import Session
 from flask_sockets import Sockets
 from werkzeug.utils import secure_filename
@@ -21,10 +21,17 @@ db = SQL("sqlite:///media.db")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-location = []
+app.config["location"] = []
 
 app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
+
+
+def time_since(timestamp_str):
+    timestamp = datetime.datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S.%f%z')
+    now = datetime.datetime.now()
+    elapsed = now - timestamp
+    return elapsed
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -38,16 +45,22 @@ def index():
     elif app.config["session_location"] % 3 != 0:
         return redirect("/loading")
 
+    elif not app.config["location"]:
+        return redirect("/loading")
+
     else:
         
         app.config["session_location"] = 0
 
-        print(location)
-        latitude = location[1]
-        longitude = location[0]
+        print(app.config["location"])
+        latitude = app.config["location"][1]
+        longitude = app.config["location"][0]
 
         posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
-        return render_template("index.html", posts = posts)
+        ww = db.execute(f"SELECT created_at FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
+        contents = db.execute(f"SELECT content FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
+        return render_template("home.html", posts=posts, ww = time_since(ww))
+        
 
 def allowed_file(filename):
     return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -60,7 +73,7 @@ def posting():
 
     else:
 
-        if not location:
+        if not app.config["location"]:
             return redirect('/loading')
 
         if 'file' not in request.files:
@@ -77,18 +90,16 @@ def posting():
             # file.save('/folder')
 
             
-            if not location:
+            if not app.config["location"]:
                 return redirect("/login")
             else:
-                latitude = location[1]
-                longitude = location[0]
+                latitude = app.config["location"][1]
+                longitude = app.config["location"][0]
                 caption = request.form.get("caption")
                 time_created= datetime.datetime.now(pytz.timezone('US/Eastern'))
                 db.execute("INSERT INTO posts (user_id, created_at, content, likes, caption, latitude, longitude) VALUES(?, ?, ?, ?, ?, ?, ?)", session["userid"], time_created, filename, 0 , caption , latitude, longitude)
 
 
-        else:
-                return redirect('/posting')
 
         return redirect("/")
 
@@ -107,12 +118,14 @@ def login():
 
         userid = db.execute("SELECT id FROM users WHERE username = ?", username)
 
-        if not userid:    
+        if not userid:
+            flash('Wrong Username', category='error')
             return render_template("login.html")
 
         hash = db.execute("SELECT password FROM users where id = ?", userid[0]["id"])
 
         if not check_password_hash(hash[0]["password"], request.form.get("password")):
+            flash('Wrong Password', category='error')
             return render_template("login.html")
          
         session["userid"] = userid[0]["id"]
@@ -141,7 +154,7 @@ def register():
                 return redirect("/register")
             else:
                 time_created= datetime.datetime.now(pytz.timezone('US/Eastern'))
-                db.execute("INSERT INTO users (username, password, time_created) VALUES(?, ?, ?)", username, generate_password_hash(password), time_created)
+                db.execute("INSERT INTO users (username, password, created_at) VALUES(?, ?, ?)", username, generate_password_hash(password), time_created)
                 return redirect("/")
 
 @app.route("/logout", methods=["GET", "POST"])
@@ -160,8 +173,10 @@ def create_entry():
 
     app.config["session_location"] += 1
 
-    location.append(req["longitude"])
-    location.append(req["latitude"])
+    app.config["location"] = []
+
+    app.config["location"].append(req["longitude"])
+    app.config["location"].append(req["latitude"])
 
     res = make_response(jsonify({"message": "Message Received"}), 200)
 
@@ -169,7 +184,10 @@ def create_entry():
 
 @app.route("/home")
 def home():
-    return render_template("home.html")
+
+    content = "nearsnap-icon.png"
+    
+    return render_template("home.html", content=content)
 
 
             

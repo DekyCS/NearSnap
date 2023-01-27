@@ -1,5 +1,20 @@
 {% extends "layout.html" %}
 
+{% block body%}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% for message in messages %}
+  {{message[1]}}
+  <button type="button" data-dimiss="alert">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  {% endfor %}
+{% endif %}
+{% endwith %}
+
+{% endblock %}
+
 {% block form %}
 
   <form autocomplete="off" action="/login" method="POST" class="login100-form validate-form">
