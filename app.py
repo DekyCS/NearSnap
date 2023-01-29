@@ -1,37 +1,49 @@
-from flask import Flask, send_file
-import os
+from flask import Flask, send_file, redirect, render_template , request, session, jsonify, make_response, flash
+import os, datetime, pytz
 from cs50 import SQL
-from flask import redirect, render_template , request, session, jsonify, make_response, flash
 from flask_session import Session
 from flask_sockets import Sockets
 from werkzeug.utils import secure_filename
-import datetime, pytz
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_socketio import SocketIO, emit
+
+
+
 
 app = Flask(__name__)
+socketio = SocketIO()
+
+
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 sockets = Sockets(app)
 
-app.secret_key = "uytgfviygf9876gyfv786gyf876t7678ft"
+app.config["secret_key"] = os.urandom(100000000)
+app.config['WTF_CSRF_SECRET_KEY'] = app.config["secret_key"]
+
+
 
 db = SQL("sqlite:///media.db")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config["location"] = []
-
 app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 
-def time_since(timestamp_str):
-    timestamp = datetime.datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S.%f%z')
-    now = datetime.datetime.now()
-    elapsed = now - timestamp
-    return elapsed
+
+def time_since(posts):
+    time_passed_list = []
+    for post in posts:
+        if 'timestamp' in post:
+            timestamp = post['timestamp']
+            timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
+            time_passed = datetime.datetime.now() - timestamp
+            time_passed_list.append(time_passed)
+    return time_passed_list
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -56,10 +68,10 @@ def index():
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
-        ww = db.execute(f"SELECT created_at FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
-        contents = db.execute(f"SELECT content FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) < 1  ")
-        return render_template("home.html", posts=posts, ww = time_since(ww))
+        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
+        content = "nearsnap-icon.png"
+        contents = db.execute(f"SELECT content FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
+        return render_template("home.html", posts=posts, wws = time_since(posts), content=content)
         
 
 def allowed_file(filename):
@@ -126,7 +138,7 @@ def login():
 
         if not check_password_hash(hash[0]["password"], request.form.get("password")):
             flash('Wrong Password', category='error')
-            return render_template("login.html")
+            return render_template("login.html" )
          
         session["userid"] = userid[0]["id"]
           
@@ -182,12 +194,7 @@ def create_entry():
 
     return "doesn't matter"
 
-@app.route("/home")
-def home():
-
-    content = "nearsnap-icon.png"
-    
-    return render_template("home.html", content=content)
 
 
-            
+
+             
