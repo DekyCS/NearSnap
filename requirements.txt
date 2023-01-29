@@ -3,3 +3,4 @@ cs50
 flask
 flask_session
 flask_sockets
+flask-socketio

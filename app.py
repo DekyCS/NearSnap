@@ -71,7 +71,7 @@ def index():
         posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
         content = "nearsnap-icon.png"
         contents = db.execute(f"SELECT content FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
-        return render_template("home.html", posts=posts, wws = time_since(posts), content=content)
+        return render_template("index.html", posts=posts, wws = time_since(posts), content=content)
         
 
 def allowed_file(filename):
@@ -81,7 +81,7 @@ def allowed_file(filename):
 def posting():
 
     if request.method == "GET":
-        return render_template("posting.html")
+        return redirect('/')
 
     else:
 

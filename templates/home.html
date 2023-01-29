@@ -98,29 +98,8 @@
             <input type="submit" value="Post">
           </form>
         </div>
-        <div class="home-container4">
-          <div class="home-blog-post-card">
-            <div class="home-container5">
-              <div class="home-profile">
-                <span class="home-text07">Jon Doe</span>
-              </div>
-              <span class="home-text08">5 min read</span>
-            </div>
-            <img
-              alt="image"
-              src="/static/posts/Flappy.png&amp;w=700"
-              class="home-image1"
-            />
-            <div class="home-container6">
-              <span class="home-text09">
-                Lorem ipsum dolor sit amet, consectetur, adipiscing elit. Sed
-                non volutpat turpis. ​ Mauris luctus rutrum mi ut rhoncus.
-                Integer in dignissim tortor. Lorem ​​ ipsum dolor sit amet,
-                consectetur adipiscing elit.
-              </span>
-            </div>
-          </div>
-        </div>
+        {% block posts%}
+        {% endblock %}
       </div>
     </div>
   </body>

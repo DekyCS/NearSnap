@@ -253,7 +253,8 @@ body{
     flex-direction: row;
     padding-bottom: var(--dl-space-space-twounits);
     justify-content: space-between;
-    background-color: #FAFAFA;
+    background-color: #E1D9D1;
+    /* #FAFAFA */
   }
   .home-profile {
     display: flex;
@@ -280,7 +281,7 @@ body{
     align-items: flex-start;
     flex-direction: column;
     justify-content: flex-start;
-    background-color: #FAFAFA;
+    background-color: #E1D9D1;
   }
   .home-text09 {
     color: var(--dl-color-gray-500);
