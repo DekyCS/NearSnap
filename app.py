@@ -1,28 +1,20 @@
-from flask import Flask, send_file, redirect, render_template , request, session, jsonify, make_response, flash
+from flask import Flask, redirect, render_template , request, session, jsonify, make_response, flash
 import os, datetime, pytz
 from cs50 import SQL
 from flask_session import Session
-from flask_sockets import Sockets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_socketio import SocketIO, emit
-
-
 
 
 app = Flask(__name__)
-socketio = SocketIO()
-
 
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
-sockets = Sockets(app)
 
 app.config["secret_key"] = os.urandom(100000000)
 app.config['WTF_CSRF_SECRET_KEY'] = app.config["secret_key"]
-
 
 
 db = SQL("sqlite:///media.db")
@@ -33,15 +25,22 @@ app.config["location"] = []
 app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
+def convert_time_format(time_str):
+    new = str(time_str)
+    h, m, s = new.split(":")
+    m = int(m) % 60
+    h = int(h) % 24
+    time = "{} hours and {} minutes ago".format(h, m)
+    return time
+
 
 def time_since(posts):
-    time_passed_list = []
-    if "created_at" in posts:
-        timestamp = posts['created_at']
-        timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
-        time_passed = datetime.datetime.now() - timestamp
-        time_passed_list.append(time_passed)
-    return time_passed_list
+    if 'created_at' in posts:
+        time = posts['created_at']
+        time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+        since = datetime.datetime.now() - time
+        return convert_time_format(since)
+    return None
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -73,15 +72,12 @@ def index():
         for post in posts:
             posts_list.append({
             'post': post,
-            'wws': time_since(post),
+            'time_since': time_since(post),
             'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post['user_id'])
         })
 
-        for l in posts:
-            print(time_since(l))
-
         for data in posts_list:
-            print(data['post'])
+            print(data['time_since'])
 
         return render_template("index.html", posts_list=posts_list)
         
