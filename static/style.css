@@ -431,3 +431,6 @@ footer .footer .content > div .image {
         bottom: var(--distance, 10rem);
    }
 }
+
+
+.show-more-btn{all:unset;}

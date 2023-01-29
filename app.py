@@ -27,10 +27,18 @@ app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 def convert_time_format(time_str):
     new = str(time_str)
+    if "," in new:
+        date, new = new.split(",")
+    else:
+        date = None
     h, m, s = new.split(":")
     m = int(m) % 60
+    h = h.split(',')[-1].strip()
     h = int(h) % 24
-    time = "{} hours and {} minutes ago".format(h, m)
+    if date:
+        time = "{} ago".format(date)
+    else:
+        time = "{} hours and {} minutes ago".format(h, m)
     return time
 
 
@@ -61,13 +69,12 @@ def index():
         
         app.config["session_location"] = 0
 
-        print(app.config["location"])
+        # print(app.config["location"])
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/6371) ")
+        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10 ")
         posts_list = []
-
 
         for post in posts:
             posts_list.append({
@@ -76,10 +83,7 @@ def index():
             'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post['user_id'])
         })
 
-        for data in posts_list:
-            print(data['time_since'])
-
-        return render_template("index.html", posts_list=posts_list)
+        return render_template("index.html", posts_list=posts_list[::-1])
         
 
 def allowed_file(filename):

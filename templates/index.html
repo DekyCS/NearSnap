@@ -1,44 +1,32 @@
 {% extends "home.html" %}
 
 {% block posts %}
-{% if posts_data %}
-
+{% if posts_list %}
+{% for posts in posts_list %}
 <div class="home-container4">
-  {% set num_posts = 20 %}
-  {% for post_data in posts_data[:num_posts] %}
     <div class="home-blog-post-card">
       <div class="home-container5">
-        <div class="home-profile">  
-          <span class="home-text07">dawdad</span>
+        <div class="home-profile">
+          <span class="home-text07">{{posts['username'][0]['username']}}</span>
         </div>
-        <span class="home-text08"></span>
+        <span class="home-text08">{{posts['time_since']}}</span>
       </div>
       <img
         alt="image"
-        src="/static/posts/"
+        src="/static/posts/{{posts['post']['content']}}"
         class="home-image1"
       />
       <div class="home-container6">
         <span class="home-text09">
-            caption
+          {{posts['post']['caption']}}
         </span>
       </div>
     </div>
-  {% endfor %}
-</div>
-{% if posts_data|length > 20 %}
-<button id="show-more-btn" class="show-more-btn">Show More</button>
-{% endif %}
-
+  </div>
+{% endfor %}
 {% else %}
 
-<h2>No pictures</h2>
+  <h2>No pictures</h2>
+
 {% endif %}
-
 {% endblock %}
-
-<script>
-  document.getElementById("show-more-btn").addEventListener("click", function() {
-    num_posts += 10;
-  });
-</script>
