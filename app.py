@@ -43,7 +43,7 @@ def time_since(posts):
             timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
             time_passed = datetime.datetime.now() - timestamp
             time_passed_list.append(time_passed)
-    return time_passed_list
+    return time_passed_list 
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -69,9 +69,9 @@ def index():
         longitude = app.config["location"][0]
 
         posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
-        content = "nearsnap-icon.png"
-        contents = db.execute(f"SELECT content FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
-        return render_template("index.html", posts=posts, wws = time_since(posts), content=content)
+        for post in posts:
+            print("Post: ", post["postid"])
+        return render_template("index.html", post=posts, wws = time_since(posts))
         
 
 def allowed_file(filename):
@@ -110,7 +110,6 @@ def posting():
                 caption = request.form.get("caption")
                 time_created= datetime.datetime.now(pytz.timezone('US/Eastern'))
                 db.execute("INSERT INTO posts (user_id, created_at, content, likes, caption, latitude, longitude) VALUES(?, ?, ?, ?, ?, ?, ?)", session["userid"], time_created, filename, 0 , caption , latitude, longitude)
-
 
 
         return redirect("/")
