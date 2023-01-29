@@ -1,24 +1,24 @@
 {% extends "home.html" %}
 
 {% block posts %}
-{% if post %}
-{% for posts in post %}
+{% if posts_data %}
+{% for post_data in posts_data %}
 <div class="home-container4">
     <div class="home-blog-post-card">
       <div class="home-container5">
-        <div class="home-profile">
-          <span class="home-text07">dadadawd</span>
+        <div class="home-profile">  
+          <span class="home-text07">dawdad</span>
         </div>
-        <span class="home-text08">5 min read</span>
+        <span class="home-text08"></span>
       </div>
       <img
         alt="image"
-        src="/static/posts/{{ posts['content'] }}"
+        src="/static/posts/"
         class="home-image1"
       />
       <div class="home-container6">
         <span class="home-text09">
-          {{posts["caption"]}}
+            caption
         </span>
       </div>
     </div>

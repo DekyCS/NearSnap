@@ -37,13 +37,12 @@ app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 def time_since(posts):
     time_passed_list = []
-    for post in posts:
-        if 'timestamp' in post:
-            timestamp = post['timestamp']
-            timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
-            time_passed = datetime.datetime.now() - timestamp
-            time_passed_list.append(time_passed)
-    return time_passed_list 
+    if posts['created_at']:
+        timestamp = posts['created_at']
+        timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
+        time_passed = datetime.datetime.now() - timestamp
+        time_passed_list.append(time_passed)
+    return time_passed_list
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -68,10 +67,24 @@ def index():
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/1000) ")
+        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= (1/6371) ")
+        posts_list = []
+
+
         for post in posts:
-            print("Post: ", post["postid"])
-        return render_template("index.html", post=posts, wws = time_since(posts))
+            posts_list.append({
+            'post': post,
+            'wws': time_since(post),
+            'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post['user_id'])
+        })
+
+        for l in posts:
+            print(time_since(l))
+
+        for data in posts_list:
+            print(data['post'])
+
+        return render_template("index.html", posts_list=posts_list)
         
 
 def allowed_file(filename):
