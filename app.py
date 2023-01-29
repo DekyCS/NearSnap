@@ -34,10 +34,9 @@ app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 
-
 def time_since(posts):
     time_passed_list = []
-    if posts['created_at']:
+    if "created_at" in posts:
         timestamp = posts['created_at']
         timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
         time_passed = datetime.datetime.now() - timestamp

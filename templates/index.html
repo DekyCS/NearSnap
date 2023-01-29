@@ -2,8 +2,10 @@
 
 {% block posts %}
 {% if posts_data %}
-{% for post_data in posts_data %}
+
 <div class="home-container4">
+  {% set num_posts = 20 %}
+  {% for post_data in posts_data[:num_posts] %}
     <div class="home-blog-post-card">
       <div class="home-container5">
         <div class="home-profile">  
@@ -22,11 +24,21 @@
         </span>
       </div>
     </div>
-  </div>
-{% endfor %}
+  {% endfor %}
+</div>
+{% if posts_data|length > 20 %}
+<button id="show-more-btn" class="show-more-btn">Show More</button>
+{% endif %}
+
 {% else %}
 
-  <h2>No pictures</h2>
-
+<h2>No pictures</h2>
 {% endif %}
+
 {% endblock %}
+
+<script>
+  document.getElementById("show-more-btn").addEventListener("click", function() {
+    num_posts += 10;
+  });
+</script>
