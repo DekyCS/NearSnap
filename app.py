@@ -1,10 +1,12 @@
-from flask import Flask, redirect, render_template , request, session, jsonify, make_response, flash
+from flask import Flask, redirect, render_template , request, session, jsonify, make_response, flash, g
 import os, datetime, pytz
 from cs50 import SQL
 from flask_session import Session
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
+import math
+
 
 app = Flask(__name__)
 
@@ -19,11 +21,21 @@ app.config['WTF_CSRF_SECRET_KEY'] = app.config["secret_key"]
 
 db = SQL("sqlite:///media.db")
 
+def acos(x):
+    return math.acos(x)
 
-def connect_db():
-    conn = sqlite3.connect("media.db")
-    cursor = conn.cursor()
-    return conn, cursor
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect('media.db')
+        g.db.create_function("acos", 1, acos)
+    return g.db
+
+@app.teardown_appcontext
+def close_db(error):
+    if 'db' in g:
+        g.db.close()
+
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -32,7 +44,6 @@ app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 def convert_time_format(time_str):
-    print(time_str)
     new = str(time_str)
     if "," in new:
         date, new = new.split(",")
@@ -80,27 +91,27 @@ def index():
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        conn, cursor = connect_db()
+        db_ = get_db()
+        cursor = db_.cursor()
         posts = cursor.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10 ")
         posts = cursor.fetchall()
-        conn.close()
         posts_list = []
-
-
+        
         for post in posts:
+            print("Printing", post[1])
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
             'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post[1])
+                    
         })
 
-
-        for p in posts_list:
-            print(p['post'])
         return render_template("index.html", posts_list=posts_list[::-1])
         
 
 def allowed_file(filename):
+
+    
     return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/posting", methods=["GET", "POST"])
