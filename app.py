@@ -24,10 +24,23 @@ db = SQL("sqlite:///media.db")
 def acos(x):
     return math.acos(x)
 
+def sin(x):
+    return math.sin(x)
+
+def cos(x):
+    return math.cos(x)
+
+def radians(x):
+    return math.radians
+
+
 def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect('media.db')
         g.db.create_function("acos", 1, acos)
+        g.db.create_function("sin", 1, sin)
+        g.db.create_function("cos", 1, cos)
+        g.db.create_function("radians", 1, radians)
     return g.db
 
 @app.teardown_appcontext
@@ -229,3 +242,8 @@ def create_entry():
     res = make_response(jsonify({"message": "Message Received"}), 200)
 
     return "doesn't matter"
+
+
+
+
+             
