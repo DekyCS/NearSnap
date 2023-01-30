@@ -4,7 +4,7 @@ from cs50 import SQL
 from flask_session import Session
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import sqlite3
 
 app = Flask(__name__)
 
@@ -19,6 +19,12 @@ app.config['WTF_CSRF_SECRET_KEY'] = app.config["secret_key"]
 
 db = SQL("sqlite:///media.db")
 
+
+def connect_db():
+    conn = sqlite3.connect("media.db")
+    cursor = conn.cursor()
+    return conn, cursor
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config["location"] = []
@@ -26,6 +32,7 @@ app.config["session_location"] = 0
 app.config['UPLOAD_FOLDER'] = 'static/posts'
 
 def convert_time_format(time_str):
+    print(time_str)
     new = str(time_str)
     if "," in new:
         date, new = new.split(",")
@@ -43,8 +50,8 @@ def convert_time_format(time_str):
 
 
 def time_since(posts):
-    if 'created_at' in posts:
-        time = posts['created_at']
+    if posts[3] != "":
+        time = posts[3]
         time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
         since = datetime.datetime.now() - time
         return convert_time_format(since)
@@ -73,16 +80,23 @@ def index():
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        posts = db.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10 ")
+        conn, cursor = connect_db()
+        posts = cursor.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10 ")
+        posts = cursor.fetchall()
+        conn.close()
         posts_list = []
+
 
         for post in posts:
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
-            'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post['user_id'])
+            'username': db.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=? LIMIT 1", post[1])
         })
 
+
+        for p in posts_list:
+            print(p['post'])
         return render_template("index.html", posts_list=posts_list[::-1])
         
 
@@ -204,8 +218,3 @@ def create_entry():
     res = make_response(jsonify({"message": "Message Received"}), 200)
 
     return "doesn't matter"
-
-
-
-
-             

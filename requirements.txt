@@ -4,3 +4,4 @@ flask
 flask_session
 flask_sockets
 flask-socketio
+sqlite3
