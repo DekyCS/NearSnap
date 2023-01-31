@@ -1,6 +1,5 @@
 from flask import Flask, redirect, render_template , request, session, jsonify, make_response, flash, g
 import os, datetime, pytz
-from cs50 import SQL
 from flask_session import Session
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
