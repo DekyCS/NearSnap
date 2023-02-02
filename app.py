@@ -83,12 +83,10 @@ def index():
         posts_list = []
 
         for post in posts:
-            cursor.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=%s LIMIT 1", (post[0],))
-            user = cursor.fetchall()
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
-            'username': user                 
+            'username': post[2]                 
         })
 
         cursor.close()
