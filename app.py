@@ -8,7 +8,7 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 
 # MySQL configurations
-app.config['MYSQL_HOST'] = '35.229.66.34'
+app.config['MYSQL_HOST'] = 'nearsnap.c8vh5wpesfah.us-east-1.rds.amazonaws.com'
 app.config['MYSQL_USER'] = "root"
 app.config['MYSQL_PASSWORD'] = 'nearfaceo&a2023'
 app.config['MYSQL_DB'] = 'nearsnap'
@@ -46,7 +46,7 @@ def convert_time_format(time_str):
 
 def time_since(posts):
     if posts[3] != "":
-        time = posts[3]
+        time = posts[6]
         time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S.%f')
         since = datetime.datetime.now() - time
         return convert_time_format(since)
@@ -81,17 +81,15 @@ def index():
         cursor.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10")
         posts = cursor.fetchall()
         posts_list = []
-        
+
         for post in posts:
-            cursor.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=%s LIMIT 1", (post[1],))
+            cursor.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=%s LIMIT 1", (post[0],))
             user = cursor.fetchall()
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
             'username': user                 
         })
-
-        print(posts_list[0]["post"][6])
 
         cursor.close()
 
@@ -200,14 +198,11 @@ def register():
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         exist = cursor.fetchall()
 
-        print(exist)
-
         if not exist:
             if password != password_confirm:
                 return redirect("/register")
             else:
                 time_created = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                print(time_created)
                 cursor.execute("INSERT INTO users (username, password, created_at) VALUES(%s, %s, %s)", (username, generate_password_hash(password), time_created,))
                 mysql.connection.commit()
                 cursor.close()
