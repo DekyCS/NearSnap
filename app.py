@@ -83,11 +83,18 @@ def index():
         posts_list = []
 
         for post in posts:
+            print("find the id", post)
+            cursor.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=%s LIMIT 1", (post[5],))
+            user = cursor.fetchall()
+            print(user)
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
-            'username': post[2]                 
+            'username': user[0][0]                 
         })
+
+        for p in posts_list:
+            print(p['username'])
 
         cursor.close()
 
@@ -221,6 +228,8 @@ def loading():
 def create_entry():
 
     req = request.get_json()
+
+    print(req)
 
     app.config["session_location"] += 1
 
