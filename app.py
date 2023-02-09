@@ -84,18 +84,13 @@ def index():
         posts_list = []
 
         for post in posts:
-            print("find the id", post)
             cursor.execute("SELECT users.username, user_id FROM posts JOIN users ON posts.user_id = users.id WHERE user_id=%s LIMIT 1", (post[5],))
             user = cursor.fetchall()
-            print(user)
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
             'username': user[0][0]
         })
-
-        for p in posts_list:
-            print(p['username'])
 
         cursor.close()
 
@@ -230,8 +225,6 @@ def create_entry():
 
     req = request.get_json()
 
-    print(req)
-
     app.config["session_location"] += 1
 
     app.config["location"] = []
@@ -243,8 +236,22 @@ def create_entry():
 
     return "doesn't matter"
 
+
+@app.route("/<string:username>")
+def me(username):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+    exist = cursor.fetchall()
+    if exist[0][0] and exist[0][0] == session['userid']:
+        cursor.execute("SELECT content from posts WHERE user_id=%s", (session["userid"],))
+        posts = cursor.fetchall()
+        print(posts)
+        cursor.close()
+        return render_template("me.html", username=username, posts=posts)
+    else:
+        cursor.close()
+        return redirect("/")
+
+
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-

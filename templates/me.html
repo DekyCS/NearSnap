@@ -1,0 +1,15 @@
+{% extends "home.html"%}
+
+{% block body %}
+
+<h1>your pictures</h1>
+{% for post in posts %}
+<img
+        alt="image"
+        src="/static/posts/{{post[0]}}"
+        class="home-image1"
+      />
+{% endfor %}
+
+{% endblock %}
+
