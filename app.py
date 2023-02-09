@@ -60,7 +60,7 @@ def index():
 
     if session.get("userid") is None:
          return redirect("/login")
-    
+
     elif app.config["session_location"] % 3 != 0:
         return redirect("/loading")
 
@@ -68,7 +68,7 @@ def index():
         return redirect("/loading")
 
     else:
-        
+
 
         cursor = mysql.connection.cursor()
 
@@ -78,7 +78,8 @@ def index():
         latitude = app.config["location"][1]
         longitude = app.config["location"][0]
 
-        cursor.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 10")
+        cursor.execute(f"SELECT * FROM posts WHERE (6371 * acos(cos(radians({latitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(latitude)))) <= 4")
+
         posts = cursor.fetchall()
         posts_list = []
 
@@ -90,7 +91,7 @@ def index():
             posts_list.append({
             'post': post,
             'time_since': time_since(post),
-            'username': user[0][0]                 
+            'username': user[0][0]
         })
 
         for p in posts_list:
@@ -99,11 +100,11 @@ def index():
         cursor.close()
 
         return render_template("index.html", posts_list=posts_list[::-1])
-        
+
 
 def allowed_file(filename):
 
-    
+
     return filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/posting", methods=["GET", "POST"])
@@ -130,7 +131,7 @@ def posting():
             file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'], filename))
             # file.save('/folder')
 
-            
+
             if not app.config["location"]:
                 return redirect("/login")
             else:
@@ -155,7 +156,7 @@ def login():
     if request.method == "GET":
 
         return render_template("login.html")
-        
+
     else:
 
         session.clear()
@@ -178,17 +179,17 @@ def login():
         if not check_password_hash(hash[0][0], request.form.get("password")):
             flash('Wrong Password', category='error')
             return render_template("login.html" )
-         
+
         session["userid"] = userid[0][0]
 
         cursor.close()
-          
+
         return redirect("/")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    
+
     if request.method == "GET":
         return render_template("register.html")
 
@@ -246,4 +247,4 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 
-             
+
