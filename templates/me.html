@@ -1,15 +1,15 @@
-{% extends "home.html"%}
+{% extends "home1.html"%}
 
 {% block body %}
 
-<h1>your pictures</h1>
+<div class="gallery">
 {% for post in posts %}
-<img
-        alt="image"
-        src="/static/posts/{{post[0]}}"
-        class="home-image1"
-      />
-{% endfor %}
 
+  <img src="/static/posts/{{post[0]}}">
+
+
+      
+{% endfor %}
+</div>
 {% endblock %}
 

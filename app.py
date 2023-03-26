@@ -120,6 +120,7 @@ def posting():
 
         if file.filename == '':
             return redirect('/posting')
+            
 
         if allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -141,7 +142,6 @@ def posting():
                 cursor.execute("INSERT INTO posts (user_id, created_at, content, caption, latitude, longitude) VALUES(%s, %s, %s, %s, %s, %s)", (session["userid"], time_created, filename, caption, latitude, longitude))
                 mysql.connection.commit()
                 cursor.close()
-
 
         return redirect("/")
 
@@ -237,20 +237,27 @@ def create_entry():
     return "doesn't matter"
 
 
-@app.route("/<string:username>")
-def me(username):
+@app.route("/me", methods=["POST", "GET"])
+def me():
+
+    if not session["userid"]:
+        return redirect("login");
+
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
-    exist = cursor.fetchall()
-    if exist[0][0] and exist[0][0] == session['userid']:
-        cursor.execute("SELECT content from posts WHERE user_id=%s", (session["userid"],))
-        posts = cursor.fetchall()
-        print(posts)
-        cursor.close()
-        return render_template("me.html", username=username, posts=posts)
-    else:
-        cursor.close()
-        return redirect("/")
+    username = session['userid']
+    
+    
+    cursor.execute("SELECT content from posts WHERE user_id=%s", (session["userid"],))
+    posts = cursor.fetchall()
+    print(posts)
+    cursor.close()
+    return render_template("me.html", username=username, posts=posts)
+
+
+@app.route("/delete")
+def delete():
+    print("123")
+
 
 
 if __name__ == '__main__':
